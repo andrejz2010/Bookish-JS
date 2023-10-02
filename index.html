@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bookish library</title>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+
+</head>
+
+<body>
+  <div class="header">
+    <a href="#home" class="logo" onClick="removeContent()">Bookish library</a>
+    <div class="header-right">
+      <a href="#home" class="active" onClick="removeContent()">Home</a>
+      <a href="#our_books" onclick="fetchData()">Our Books</a>
+      <a href="#add_book" onClick="addBook()">Add a book</a>
+      <a href="#delete_book" onClick="deleteBook()">Delete a book</a>
+    </div>
+  </div>
+  <main>
+    
+    <div id="output"></div>
+
+
+    <script>
+
+    
+let dataIsFetched = false;
+let output = document.getElementById('output');
+
+
+
+function fetchData() {
+  axios.get("http://localhost:8080/books")
+    .then((response) => {
+
+      if (dataIsFetched == false) {
+        
+
+        for (let index = 0; index < response.data.length; index++) {
+const book=response.data[index];
+          output.innerHTML+= `<a href="/book-page?id=${book.id}
+"><div class=book id=book_id_${book.id}>` + book.title + "<br/>"  + (book.checked_out==false ? "Available" : "Unavailable")+ "<br/>"+ "Book Id : " + book.id + "<br/>"+"</div></a>";
+         
+
+
+        }
+
+
+
+        dataIsFetched = true;
+
+
+      }
+    })
+    .catch((err) => {
+      output.innerHTML += "The error is - " + err + "<br/>";
+    })
+
+}
+
+
+
+function removeContent() {
+  let divElement = document.getElementById("output");
+  while (divElement.firstChild) {
+    divElement.removeChild(divElement.firstChild);
+  }
+  dataIsFetched = false;
+}
+
+
+function addBook() {
+
+  let bookTitle = prompt("Please enter book title:");
+if (bookTitle !=null && bookTitle!=0 && bookTitle!=""){
+  fetch('http://localhost:8080/books', {
+    method: 'POST',
+    body: JSON.stringify({
+
+      title: bookTitle
+
+    }),
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8'
+    }
+  }).then(function (response) {
+    if (response.ok) {
+      return response.json();
+    }
+    return Promise.reject(response);
+  }).then(function (data) {
+    console.log(data);
+  }).catch(function (error) {
+    console.warn('Something went wrong.', error);
+  });
+}
+removeContent();
+fetchData();
+
+}
+
+
+
+function deleteBook() {
+
+let bookId = prompt("Please book id:");
+
+
+fetch('http://localhost:8080/books/delete/' + bookId, {
+  method: 'DELETE',
+})
+.then(res => res.text())
+.then(res => {
+console.log(res)
+const bookElement=document.getElementById(`book_id_${bookId}`);
+bookElement.remove();
+
+
+})
+
+
+
+}
+
+
+
+    </script>
+
+
+
+
+  </main>
+
+  <div id="app"></div>
+</body>
+
+</html>
